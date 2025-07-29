@@ -22,6 +22,33 @@
             background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
             color: white;
             height: 100%;
+            opacity: 0;
+            animation: pageLoadFadeIn 1.2s ease-out forwards;
+            scroll-behavior: smooth;
+        }
+
+        @keyframes pageLoadFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes successPulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.02);
+                filter: brightness(1.2);
+            }
         }
 
         #particles-canvas {
@@ -33,7 +60,7 @@
             z-index: -1;
         }
 
-        /* Existing styles remain unchanged */
+        /* Page transition animations */
         .container {
             display: flex;
             justify-content: center;
@@ -42,6 +69,15 @@
             position: relative;
             z-index: 1;
             padding: 20px;
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .container.page-exit {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.95);
+            filter: blur(10px);
         }
 
         .home-page {
@@ -55,6 +91,20 @@
             max-width: 600px;
             width: 100%;
             margin: 0 auto;
+            animation: homePageSlideIn 1s ease-out;
+        }
+
+        @keyframes homePageSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
         }
 
         .title {
@@ -307,10 +357,29 @@
             width: 100%;
             margin: 0 auto;
             padding: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .chat-container.show {
             display: flex !important;
+            opacity: 1;
+            transform: translateY(0);
+            animation: chatSlideIn 0.8s ease-out;
+        }
+
+        @keyframes chatSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
         }
 
         .chat-header {
@@ -360,6 +429,29 @@
             padding: 15px;
             overflow-y: auto;
             max-height: calc(100vh - 180px);
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(78, 205, 196, 0.5) rgba(255, 255, 255, 0.1);
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #44a08d, #4ecdc4);
+            transform: scale(1.1);
         }
 
         .message {
@@ -368,18 +460,25 @@
             border-radius: 20px;
             max-width: 85%;
             word-wrap: break-word;
-            animation: messageSlideIn 0.3s ease-out;
             position: relative;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            animation: messageSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
         @keyframes messageSlideIn {
-            from {
+            0% {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(20px) scale(0.9);
+                filter: blur(3px);
             }
-            to {
+            60% {
+                transform: translateY(-2px) scale(1.02);
+            }
+            100% {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
+                filter: blur(0);
             }
         }
 
@@ -387,11 +486,19 @@
             background: linear-gradient(45deg, #667eea, #764ba2);
             margin-left: auto;
             text-align: right;
+            animation-delay: 0.1s;
         }
 
         .message.other {
             background: rgba(255, 255, 255, 0.1);
             margin-right: auto;
+            animation-delay: 0.05s;
+        }
+
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .message.deleted {
@@ -635,7 +742,113 @@
             margin-bottom: 15px;
             font-style: italic;
             border: 1px solid rgba(78, 205, 196, 0.3);
-            animation: messageSlideIn 0.3s ease-out;
+            opacity: 0;
+            transform: translateY(10px) scale(0.9);
+            animation: notificationSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes notificationSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.9);
+                filter: blur(3px);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* Staggered animation for login buttons */
+        .login-btn, .social-btn {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: buttonSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .login-btn {
+            animation-delay: 0.3s;
+        }
+
+        .social-btn:nth-child(1) { animation-delay: 0.5s; }
+        .social-btn:nth-child(2) { animation-delay: 0.6s; }
+        .social-btn:nth-child(3) { animation-delay: 0.7s; }
+        .social-btn:nth-child(4) { animation-delay: 0.8s; }
+
+        @keyframes buttonSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+                filter: blur(3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* Enhanced chat header animation */
+        .chat-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: headerSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+        }
+
+        @keyframes headerSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+                filter: blur(3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /* Input container animation */
+        .input-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 15px;
+            border-radius: 0 0 15px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: none;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: inputSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+        }
+
+        @keyframes inputSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+                filter: blur(3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
         }
 
         /* Image modal */
@@ -1508,18 +1721,22 @@ body {
             // Update user's last seen time before logout
             updateUserLastSeen(currentUser);
             
-            auth.signOut().then(() => {
-                currentUser = null;
-                userJoinTime = null;
-                editingMessageId = null;
-                document.getElementById('home-page').classList.remove('hidden');
-                document.getElementById('chat-page').classList.add('hidden');
-                if (messagesRef) {
-                    messagesRef.off();
-                }
-                // Clear messages container
-                document.getElementById('messages-container').innerHTML = '';
-                cancelEdit();
+            const chatPage = document.getElementById('chat-page');
+            const homePage = document.getElementById('home-page');
+            
+            // Smooth transition back to home page
+            smoothPageTransition(chatPage, homePage, () => {
+                auth.signOut().then(() => {
+                    currentUser = null;
+                    userJoinTime = null;
+                    editingMessageId = null;
+                    if (messagesRef) {
+                        messagesRef.off();
+                    }
+                    // Clear messages container
+                    document.getElementById('messages-container').innerHTML = '';
+                    cancelEdit();
+                });
             });
         }
 
@@ -1618,7 +1835,57 @@ body {
             }
             
             container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
+            
+            // Smooth scroll to bottom with easing
+            smoothScrollToBottom(container);
+        }
+
+        function smoothScrollToBottom(container) {
+            const startY = container.scrollTop;
+            const targetY = container.scrollHeight - container.clientHeight;
+            const distance = targetY - startY;
+            const duration = 500; // ms
+            let startTime = null;
+
+            function easeOutQuart(t) {
+                return 1 - (--t) * t * t * t;
+            }
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                
+                container.scrollTop = startY + distance * easeOutQuart(progress);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animation);
+                }
+            }
+            
+            requestAnimationFrame(animation);
+        }
+
+        function smoothPageTransition(fromPage, toPage, callback) {
+            // Add exit animation to current page
+            fromPage.classList.add('page-exit');
+            
+            setTimeout(() => {
+                // Hide current page and show new page
+                fromPage.classList.add('hidden');
+                fromPage.classList.remove('page-exit');
+                toPage.classList.remove('hidden');
+                
+                // Trigger reflow to ensure the class is applied
+                toPage.offsetHeight;
+                
+                // Add entrance animation
+                if (toPage.id === 'chat-page') {
+                    toPage.classList.add('show');
+                }
+                
+                if (callback) callback();
+            }, 400);
         }
 
         function updateMessage(message, messageKey) {
@@ -1766,7 +2033,7 @@ body {
             notificationDiv.className = 'user-joined-notification';
             notificationDiv.innerHTML = '🎉 Welcome to the chat! You can only see messages from this point forward.';
             container.appendChild(notificationDiv);
-            container.scrollTop = container.scrollHeight;
+            smoothScrollToBottom(container);
         }
 
         function showReturningUserNotification() {
@@ -1775,28 +2042,46 @@ body {
             notificationDiv.className = 'user-joined-notification';
             notificationDiv.innerHTML = '🔄 Welcome back! Your chat history has been restored.';
             container.appendChild(notificationDiv);
-            container.scrollTop = container.scrollHeight;
+            smoothScrollToBottom(container);
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing app...');
             
+            // Add page load animation
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+            
             // Initialize Firebase first
             if (!initializeFirebase()) {
                 return; // Exit if Firebase initialization failed
             }
 
-            // Initialize particle system and greetings
-            new ParticleSystem();
-            updateGreeting();
-            setInterval(updateGreeting, 3000);
+            // Initialize particle system and greetings with delay for better UX
+            setTimeout(() => {
+                new ParticleSystem();
+                updateGreeting();
+                setInterval(updateGreeting, 3000);
+            }, 300);
 
-            // Auto-resize textarea
+            // Auto-resize textarea with smooth animation
             const messageInput = document.getElementById('message-input');
             messageInput.addEventListener('input', function() {
+                this.style.transition = 'height 0.2s ease';
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            // Add smooth focus effects
+            messageInput.addEventListener('focus', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+
+            messageInput.addEventListener('blur', function() {
+                this.style.transform = 'scale(1)';
             });
 
             // Check if user is coming back from email link
@@ -1818,7 +2103,13 @@ body {
                     auth.signInWithEmailLink(email, window.location.href).then((result) => {
                         localStorage.removeItem('emailForSignIn');
                         console.log('✅ Successfully signed in:', result.user.email);
-                        alert('🎉 Successfully signed in! Welcome to CodexDev Chat!');
+                        
+                        // Show success animation
+                        document.body.style.animation = 'successPulse 0.6s ease-out';
+                        
+                        setTimeout(() => {
+                            alert('🎉 Successfully signed in! Welcome to CodexDev Chat!');
+                        }, 300);
                         
                         // Clean up the URL to remove email link parameters
                         const cleanUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
@@ -1850,24 +2141,23 @@ body {
                         userJoinTime = joinTime;
                         console.log('User join time set to:', new Date(userJoinTime).toLocaleString());
                         
-                        // Show chat page and hide home page
+                        // Show chat page and hide home page with smooth transition
                         console.log('Switching to chat interface...');
                         const homePage = document.getElementById('home-page');
                         const chatPage = document.getElementById('chat-page');
                         const userEmailSpan = document.getElementById('user-email');
                         
                         if (homePage && chatPage && userEmailSpan) {
-                            homePage.classList.add('hidden');
-                            chatPage.classList.remove('hidden');
-                            chatPage.style.display = 'flex';
                             userEmailSpan.textContent = user.email || user.phoneNumber || 'Anonymous';
-                            console.log('✅ Successfully switched to chat interface');
+                            
+                            smoothPageTransition(homePage, chatPage, () => {
+                                console.log('✅ Successfully switched to chat interface');
+                                // Setup messaging after transition completes
+                                setupMessaging();
+                            });
                         } else {
                             console.error('❌ Could not find required DOM elements');
                         }
-                        
-                        // Load messages and setup real-time messaging
-                        setupMessaging();
                     });
                     
                 } else {
