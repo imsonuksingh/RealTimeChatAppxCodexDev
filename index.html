@@ -932,7 +932,9 @@ body {
                 'Database Connected': !!database,
                 'Recaptcha Loaded': !!recaptchaVerifier,
                 'User Join Time': userJoinTime ? new Date(userJoinTime).toLocaleString() : 'Not set',
-                'Editing Message': editingMessageId || 'None'
+                'Editing Message': editingMessageId || 'None',
+                'Messages Loaded': document.querySelectorAll('.message').length,
+                'User Type': userJoinTime && (Date.now() - userJoinTime) > 60000 ? 'Returning' : 'New'
             };
             
             let html = '';
@@ -1177,26 +1179,103 @@ body {
             const file = event.target.files[0];
             if (!file) return;
             
-            // Check file size (limit to 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size must be less than 5MB');
+            console.log('File selected:', file.name, 'Size:', file.size);
+            
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
                 return;
             }
             
-            // Convert to base64
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageData = e.target.result;
-                sendImageMessage(imageData);
-            };
-            reader.readAsDataURL(file);
+            // Check file size (limit to 2MB for better performance)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image size must be less than 2MB');
+                return;
+            }
             
-            // Clear the input
-            event.target.value = '';
+            // Show loading indicator
+            const fileBtn = document.querySelector('.file-btn');
+            const originalContent = fileBtn.innerHTML;
+            fileBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            fileBtn.disabled = true;
+            
+            // Compress and convert to base64
+            compressAndConvertImage(file)
+                .then(imageData => {
+                    console.log('Image compressed, size:', imageData.length);
+                    sendImageMessage(imageData);
+                })
+                .catch(error => {
+                    console.error('Error processing image:', error);
+                    alert('Error processing image: ' + error.message);
+                })
+                .finally(() => {
+                    // Restore button
+                    fileBtn.innerHTML = originalContent;
+                    fileBtn.disabled = false;
+                    // Clear the input
+                    event.target.value = '';
+                });
+        }
+
+        function compressAndConvertImage(file) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    // Calculate new dimensions (max 800px width/height)
+                    let { width, height } = img;
+                    const maxSize = 800;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    // Set canvas size
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Draw and compress
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to base64 with compression
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(compressedDataUrl);
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('Failed to load image'));
+                };
+                
+                // Load the image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                };
+                reader.onerror = function() {
+                    reject(new Error('Failed to read file'));
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         function sendImageMessage(imageData) {
-            if (!currentUser) return;
+            if (!currentUser) {
+                alert('Please sign in to send images');
+                return;
+            }
+            
+            console.log('Sending image message...');
             
             const message = {
                 type: 'image',
@@ -1206,7 +1285,14 @@ body {
                 id: Date.now() + Math.random()
             };
             
-            database.ref('messages').push(message);
+            database.ref('messages').push(message)
+                .then(() => {
+                    console.log('Image message sent successfully');
+                })
+                .catch(error => {
+                    console.error('Error sending image:', error);
+                    alert('Failed to send image: ' + error.message);
+                });
         }
 
         function openImageModal(imageSrc) {
@@ -1419,6 +1505,9 @@ body {
         }
 
         function logout() {
+            // Update user's last seen time before logout
+            updateUserLastSeen(currentUser);
+            
             auth.signOut().then(() => {
                 currentUser = null;
                 userJoinTime = null;
@@ -1540,11 +1629,151 @@ body {
             displayMessage(message, messageKey);
         }
 
+        // User tracking functions
+        function checkUserJoinTime(user) {
+            return new Promise((resolve) => {
+                const userEmail = user.email || user.phoneNumber || 'Anonymous';
+                const userRef = database.ref('users/' + btoa(userEmail).replace(/[^a-zA-Z0-9]/g, ''));
+                
+                userRef.once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    
+                    if (userData && userData.firstJoinTime) {
+                        // Returning user - use their original join time
+                        console.log('📋 Returning user detected, loading chat history from:', new Date(userData.firstJoinTime).toLocaleString());
+                        resolve(userData.firstJoinTime);
+                    } else {
+                        // New user - set current time as first join time
+                        const currentTime = Date.now();
+                        userRef.set({
+                            email: userEmail,
+                            firstJoinTime: currentTime,
+                            lastSeen: currentTime
+                        }).then(() => {
+                            console.log('🆕 New user registered with join time:', new Date(currentTime).toLocaleString());
+                            resolve(currentTime);
+                        }).catch((error) => {
+                            console.error('Error saving user data:', error);
+                            resolve(currentTime);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error('Error checking user data:', error);
+                    // Fallback to current time
+                    resolve(Date.now());
+                });
+            });
+        }
+
+        function updateUserLastSeen(user) {
+            if (!user) return;
+            
+            const userEmail = user.email || user.phoneNumber || 'Anonymous';
+            const userRef = database.ref('users/' + btoa(userEmail).replace(/[^a-zA-Z0-9]/g, ''));
+            
+            userRef.update({
+                lastSeen: Date.now()
+            }).catch((error) => {
+                console.error('Error updating last seen:', error);
+            });
+        }
+
+        function setupMessaging() {
+            try {
+                // Clear previous messages
+                document.getElementById('messages-container').innerHTML = '';
+                
+                // Show appropriate notification
+                if (userJoinTime === Date.now() || (Date.now() - userJoinTime) < 5000) {
+                    // New user or very recent join time
+                    showJoinNotification();
+                } else {
+                    // Returning user
+                    showReturningUserNotification();
+                }
+                
+                // Load existing messages for this user (from their join time)
+                const existingMessagesRef = database.ref('messages').orderByChild('timestamp').startAt(userJoinTime);
+                
+                existingMessagesRef.once('value').then((snapshot) => {
+                    const messages = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const message = childSnapshot.val();
+                        const messageKey = childSnapshot.key;
+                        if (message.timestamp >= userJoinTime) {
+                            messages.push({ ...message, key: messageKey });
+                        }
+                    });
+                    
+                    // Sort messages by timestamp
+                    messages.sort((a, b) => a.timestamp - b.timestamp);
+                    
+                    // Display existing messages
+                    messages.forEach(message => {
+                        displayMessage(message, message.key);
+                    });
+                    
+                    console.log(`📚 Loaded ${messages.length} existing messages`);
+                });
+                
+                // Setup real-time listeners for all new messages
+                messagesRef = database.ref('messages');
+                let setupCompleteTime = Date.now();
+                
+                // Listen for new messages added after setup
+                messagesRef.on('child_added', (snapshot) => {
+                    const message = snapshot.val();
+                    const messageKey = snapshot.key;
+                    
+                    // Only display if it's a truly new message (sent after setup completed)
+                    // and if it's within the user's viewable timeframe
+                    if (message.timestamp >= userJoinTime && message.timestamp >= setupCompleteTime) {
+                        console.log('📨 New real-time message received:', message);
+                        displayMessage(message, messageKey);
+                    }
+                });
+                
+                messagesRef.on('child_changed', (snapshot) => {
+                    const message = snapshot.val();
+                    const messageKey = snapshot.key;
+                    if (message.timestamp >= userJoinTime) {
+                        console.log('📝 Message updated:', message);
+                        updateMessage(message, messageKey);
+                    }
+                });
+                
+                messagesRef.on('child_removed', (snapshot) => {
+                    const messageKey = snapshot.key;
+                    const messageElement = document.getElementById(`message-${messageKey}`);
+                    if (messageElement) {
+                        messageElement.remove();
+                    }
+                });
+                
+                console.log('✅ Real-time messaging setup complete');
+                
+                // Update user's last seen time
+                updateUserLastSeen(currentUser);
+                
+            } catch (error) {
+                console.error('❌ Error setting up messaging:', error);
+            }
+        }
+
         function showJoinNotification() {
             const container = document.getElementById('messages-container');
             const notificationDiv = document.createElement('div');
             notificationDiv.className = 'user-joined-notification';
             notificationDiv.innerHTML = '🎉 Welcome to the chat! You can only see messages from this point forward.';
+            container.appendChild(notificationDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showReturningUserNotification() {
+            const container = document.getElementById('messages-container');
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'user-joined-notification';
+            notificationDiv.innerHTML = '🔄 Welcome back! Your chat history has been restored.';
             container.appendChild(notificationDiv);
             container.scrollTop = container.scrollHeight;
         }
@@ -1616,63 +1845,30 @@ body {
                     
                     currentUser = user;
                     
-                    // Set user join time to current time (only see messages from now on)
-                    userJoinTime = Date.now();
-                    
-                    // Show chat page and hide home page
-                    console.log('Switching to chat interface...');
-                    const homePage = document.getElementById('home-page');
-                    const chatPage = document.getElementById('chat-page');
-                    const userEmailSpan = document.getElementById('user-email');
-                    
-                    if (homePage && chatPage && userEmailSpan) {
-                        homePage.classList.add('hidden');
-                        chatPage.classList.remove('hidden');
-                        chatPage.style.display = 'flex'; // Ensure it's displayed as flex
-                        userEmailSpan.textContent = user.email || user.phoneNumber || 'Anonymous';
-                        console.log('✅ Successfully switched to chat interface');
+                    // Check if this is a new user or returning user
+                    checkUserJoinTime(user).then(joinTime => {
+                        userJoinTime = joinTime;
+                        console.log('User join time set to:', new Date(userJoinTime).toLocaleString());
                         
-                        // Show welcome notification
-                        showJoinNotification();
-                    } else {
-                        console.error('❌ Could not find required DOM elements');
-                    }
-                    
-                    // Setup real-time messages - only listen for new messages after user joins
-                    try {
-                        messagesRef = database.ref('messages').orderByChild('timestamp').startAt(userJoinTime);
+                        // Show chat page and hide home page
+                        console.log('Switching to chat interface...');
+                        const homePage = document.getElementById('home-page');
+                        const chatPage = document.getElementById('chat-page');
+                        const userEmailSpan = document.getElementById('user-email');
                         
-                        messagesRef.on('child_added', (snapshot) => {
-                            const message = snapshot.val();
-                            const messageKey = snapshot.key;
-                            // Only display messages that were sent after the user joined
-                            if (message.timestamp >= userJoinTime) {
-                                console.log('📨 New message received:', message);
-                                displayMessage(message, messageKey);
-                            }
-                        });
+                        if (homePage && chatPage && userEmailSpan) {
+                            homePage.classList.add('hidden');
+                            chatPage.classList.remove('hidden');
+                            chatPage.style.display = 'flex';
+                            userEmailSpan.textContent = user.email || user.phoneNumber || 'Anonymous';
+                            console.log('✅ Successfully switched to chat interface');
+                        } else {
+                            console.error('❌ Could not find required DOM elements');
+                        }
                         
-                        messagesRef.on('child_changed', (snapshot) => {
-                            const message = snapshot.val();
-                            const messageKey = snapshot.key;
-                            if (message.timestamp >= userJoinTime) {
-                                console.log('📝 Message updated:', message);
-                                updateMessage(message, messageKey);
-                            }
-                        });
-                        
-                        messagesRef.on('child_removed', (snapshot) => {
-                            const messageKey = snapshot.key;
-                            const messageElement = document.getElementById(`message-${messageKey}`);
-                            if (messageElement) {
-                                messageElement.remove();
-                            }
-                        });
-                        
-                        console.log('✅ Real-time messaging setup complete (private mode)');
-                    } catch (error) {
-                        console.error('❌ Error setting up real-time messaging:', error);
-                    }
+                        // Load messages and setup real-time messaging
+                        setupMessaging();
+                    });
                     
                 } else {
                     console.log('❌ No user signed in');
@@ -1694,6 +1890,9 @@ body {
                         messagesRef.off();
                         messagesRef = null;
                     }
+                    
+                    // Clear messages container
+                    document.getElementById('messages-container').innerHTML = '';
                 }
             });
         });
