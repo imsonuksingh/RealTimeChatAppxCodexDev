@@ -33,122 +33,6 @@
             z-index: -1;
         }
 
-        /* Password Lock Screen Styles */
-        .password-lock {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-
-        .password-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeIn 0.8s ease-out;
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: perspective(1000px) translateZ(-100px); }
-            to { opacity: 1; transform: perspective(1000px) translateZ(0); }
-        }
-
-        .password-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-        }
-
-        .password-subtitle {
-            margin-bottom: 30px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
-        }
-
-        .password-input {
-            width: 100%;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 50px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1.2rem;
-            text-align: center;
-            outline: none;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .password-input:focus {
-            border-color: #4ecdc4;
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
-            transform: scale(1.02);
-        }
-
-        .password-btn {
-            background: linear-gradient(45deg, #4ecdc4, #44a08d);
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            width: 100%;
-            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
-        }
-
-        .password-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
-        }
-
-        .password-btn:active {
-            transform: translateY(1px);
-        }
-
-        .password-error {
-            margin-top: 20px;
-            color: #ff6b6b;
-            font-size: 1rem;
-            min-height: 24px;
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-
-        .password-hint {
-            margin-top: 30px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-style: italic;
-        }
-
         /* Existing styles remain unchanged */
         .container {
             display: flex;
@@ -485,6 +369,7 @@
             max-width: 85%;
             word-wrap: break-word;
             animation: messageSlideIn 0.3s ease-out;
+            position: relative;
         }
 
         @keyframes messageSlideIn {
@@ -509,6 +394,19 @@
             margin-right: auto;
         }
 
+        .message.deleted {
+            opacity: 0.5;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .message.edited::after {
+            content: " (edited)";
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
         .message-info {
             font-size: 0.75rem;
             opacity: 0.7;
@@ -521,6 +419,55 @@
             line-height: 1.4;
         }
 
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .message-image:hover {
+            transform: scale(1.05);
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+            gap: 5px;
+        }
+
+        .message:hover .message-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .edit-btn {
+            background: rgba(78, 205, 196, 0.8);
+        }
+
+        .delete-btn {
+            background: rgba(255, 107, 107, 0.8);
+        }
+
         .input-container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
@@ -530,10 +477,31 @@
             border-top: none;
             display: flex;
             gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .edit-mode-indicator {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-align: center;
+            display: none;
+        }
+
+        .edit-mode-indicator.show {
+            display: block;
         }
 
         .message-input {
-            flex: 1;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 12px 15px;
@@ -542,7 +510,9 @@
             font-size: clamp(0.9rem, 2vw, 1rem);
             outline: none;
             transition: all 0.3s ease;
-            min-width: 0;
+            resize: none;
+            max-height: 120px;
+            min-height: 45px;
         }
 
         .message-input::placeholder {
@@ -554,10 +524,25 @@
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
         }
 
-        .send-btn {
-            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        .input-buttons {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-btn, .send-btn, .cancel-edit-btn {
             border: none;
-            padding: 12px 20px;
+            padding: 12px 15px;
             border-radius: 25px;
             color: white;
             cursor: pointer;
@@ -565,9 +550,31 @@
             font-weight: 600;
             font-size: clamp(0.9rem, 2vw, 1rem);
             white-space: nowrap;
+            min-width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .send-btn:hover {
+        .file-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .send-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .cancel-edit-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            display: none;
+        }
+
+        .cancel-edit-btn.show {
+            display: flex;
+        }
+
+        .file-btn:hover, .send-btn:hover, .cancel-edit-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
         }
@@ -618,6 +625,49 @@
             word-break: break-all;
         }
 
+        /* New user notification */
+        .user-joined-notification {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            padding: 10px 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        /* Image modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            z-index: 2001;
+        }
+
         @media (max-width: 480px) {
             .home-page {
                 padding: 25px 15px;
@@ -630,10 +680,27 @@
             
             .input-container {
                 padding: 10px;
+                flex-direction: column;
+                gap: 10px;
             }
             
-            .message-input, .send-btn {
+            .input-wrapper {
+                width: 100%;
+            }
+            
+            .input-buttons {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .message-input {
                 padding: 10px 12px;
+            }
+            
+            .file-btn, .send-btn, .cancel-edit-btn {
+                padding: 10px 12px;
+                min-width: 40px;
+                height: 40px;
             }
             
             .chat-header {
@@ -647,13 +714,10 @@
             .login-btn {
                 padding: 12px 20px;
             }
-            
-            .password-box {
-                padding: 30px 20px;
-            }
-            
-            .password-title {
-                font-size: 1.5rem;
+
+            .message-image {
+                max-width: 200px;
+                max-height: 200px;
             }
         }
 
@@ -698,18 +762,6 @@ body {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Password Lock Screen -->
-    <div id="password-lock" class="password-lock">
-        <div class="password-box">
-            <h1 class="password-title">ACCESS REQUIRED</h1>
-            <p class="password-subtitle">Enter the password to continue</p>
-            <input type="password" id="password-input" class="password-input" placeholder="Enter Password" autocomplete="off">
-            <button class="password-btn" onclick="checkPassword()">UNLOCK</button>
-            <div id="password-error" class="password-error"></div>
-            <p class="password-hint">Hint: The password is a 4-digit number</p>
-        </div>
-    </div>
-
     <canvas id="particles-canvas"></canvas>
     
     <!-- Debug Panel -->
@@ -718,8 +770,14 @@ body {
         <div id="debug-content">Loading debug info...</div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="image-modal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close">&times;</span>
+        <img id="modal-image" src="" alt="Full size image">
+    </div>
+
     <!-- Home Page -->
-    <div id="home-page" class="container hidden">
+    <div id="home-page" class="container">
         <div class="home-page">
             <h1 class="title">Welcome To CodexDev Chat App</h1>
             <p id="greeting" class="greeting">Loading amazing greetings...</p>
@@ -790,53 +848,36 @@ body {
         </div>
         <div id="messages-container" class="messages-container"></div>
         <div class="input-container">
-            <input 
-                type="text" 
-                id="message-input" 
-                class="message-input" 
-                placeholder="Type your message here..." 
-                onkeypress="handleKeyPress(event)"
-            >
-            <button class="send-btn" onclick="sendMessage()">Send</button>
+            <div class="input-wrapper">
+                <div id="edit-mode-indicator" class="edit-mode-indicator">
+                    Editing message... <span id="cancel-edit-text" onclick="cancelEdit()" style="cursor: pointer; text-decoration: underline;">Cancel</span>
+                </div>
+                <textarea 
+                    id="message-input" 
+                    class="message-input" 
+                    placeholder="Type your message here..." 
+                    onkeypress="handleKeyPress(event)"
+                    rows="1"
+                ></textarea>
+            </div>
+            <div class="input-buttons">
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-input" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
+                    <button class="file-btn" onclick="document.getElementById('file-input').click()">
+                        <i class="fas fa-image"></i>
+                    </button>
+                </div>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button id="cancel-edit-btn" class="cancel-edit-btn" onclick="cancelEdit()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Password Lock Functionality
-        function checkPassword() {
-            const passwordInput = document.getElementById('password-input');
-            const errorElement = document.getElementById('password-error');
-            const password = passwordInput.value.trim();
-            
-            if (password === 'komalS') {
-                // Correct password
-                const lockScreen = document.getElementById('password-lock');
-                lockScreen.style.animation = 'fadeOut 0.8s ease-out forwards';
-                
-                setTimeout(() => {
-                    lockScreen.style.display = 'none';
-                    document.getElementById('home-page').classList.remove('hidden');
-                }, 800);
-            } else {
-                // Wrong password
-                errorElement.textContent = 'सॉरी चाचा आप प्रवेश नहीं कर सकते, ए भुटकुन 2 कप चाय लाओ तो साहब के लिए';
-                passwordInput.value = '';
-                passwordInput.focus();
-                
-                // Shake animation
-                errorElement.style.animation = 'none';
-                void errorElement.offsetWidth; // Trigger reflow
-                errorElement.style.animation = 'shake 0.5s ease-in-out';
-            }
-        }
-        
-        // Allow pressing Enter to submit password
-        document.getElementById('password-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkPassword();
-            }
-        });
-
         // Firebase Configuration - REPLACE WITH YOUR CONFIG FROM STEP 4
         const firebaseConfig = {
             apiKey: "AIzaSyBuAWQmGDL2qf5tadm4QD-MR15viO052xc",
@@ -860,6 +901,8 @@ body {
         let isSignUpMode = false;
         let recaptchaVerifier = null;
         let recaptchaWidgetId = null;
+        let userJoinTime = null; // Track when user joins
+        let editingMessageId = null; // Track which message is being edited
 
         // Debug functions
         function toggleDebug() {
@@ -887,7 +930,9 @@ body {
                 'Home Page Visible': !document.getElementById('home-page').classList.contains('hidden'),
                 'Chat Page Visible': !document.getElementById('chat-page').classList.contains('hidden'),
                 'Database Connected': !!database,
-                'Recaptcha Loaded': !!recaptchaVerifier
+                'Recaptcha Loaded': !!recaptchaVerifier,
+                'User Join Time': userJoinTime ? new Date(userJoinTime).toLocaleString() : 'Not set',
+                'Editing Message': editingMessageId || 'None'
             };
             
             let html = '';
@@ -1127,6 +1172,96 @@ body {
             }
         }
 
+        // Image handling functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Check file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be less than 5MB');
+                return;
+            }
+            
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                sendImageMessage(imageData);
+            };
+            reader.readAsDataURL(file);
+            
+            // Clear the input
+            event.target.value = '';
+        }
+
+        function sendImageMessage(imageData) {
+            if (!currentUser) return;
+            
+            const message = {
+                type: 'image',
+                imageData: imageData,
+                email: currentUser.email || currentUser.phoneNumber || 'Anonymous',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                id: Date.now() + Math.random()
+            };
+            
+            database.ref('messages').push(message);
+        }
+
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            modalImage.src = imageSrc;
+            modal.style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').style.display = 'none';
+        }
+
+        // Edit and delete functions
+        function editMessage(messageKey) {
+            const messageRef = database.ref('messages/' + messageKey);
+            messageRef.once('value').then((snapshot) => {
+                const message = snapshot.val();
+                if (message && message.email === (currentUser.email || currentUser.phoneNumber || 'Anonymous')) {
+                    editingMessageId = messageKey;
+                    const input = document.getElementById('message-input');
+                    input.value = message.text || '';
+                    input.focus();
+                    
+                    // Show edit mode UI
+                    document.getElementById('edit-mode-indicator').classList.add('show');
+                    document.getElementById('cancel-edit-btn').classList.add('show');
+                }
+            });
+        }
+
+        function deleteMessage(messageKey) {
+            if (confirm('Are you sure you want to delete this message?')) {
+                const messageRef = database.ref('messages/' + messageKey);
+                messageRef.once('value').then((snapshot) => {
+                    const message = snapshot.val();
+                    if (message && message.email === (currentUser.email || currentUser.phoneNumber || 'Anonymous')) {
+                        // Mark as deleted instead of removing completely
+                        messageRef.update({
+                            text: 'This message was deleted',
+                            deleted: true,
+                            deletedAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                });
+            }
+        }
+
+        function cancelEdit() {
+            editingMessageId = null;
+            document.getElementById('message-input').value = '';
+            document.getElementById('edit-mode-indicator').classList.remove('show');
+            document.getElementById('cancel-edit-btn').classList.remove('show');
+        }
+
         // Particle System
         class ParticleSystem {
             constructor() {
@@ -1286,11 +1421,16 @@ body {
         function logout() {
             auth.signOut().then(() => {
                 currentUser = null;
+                userJoinTime = null;
+                editingMessageId = null;
                 document.getElementById('home-page').classList.remove('hidden');
                 document.getElementById('chat-page').classList.add('hidden');
                 if (messagesRef) {
                     messagesRef.off();
                 }
+                // Clear messages container
+                document.getElementById('messages-container').innerHTML = '';
+                cancelEdit();
             });
         }
 
@@ -1301,37 +1441,111 @@ body {
             
             if (!text || !currentUser) return;
             
-            const message = {
-                text: text,
-                email: currentUser.email || currentUser.phoneNumber || 'Anonymous',
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                id: Date.now() + Math.random()
-            };
+            if (editingMessageId) {
+                // Update existing message
+                const messageRef = database.ref('messages/' + editingMessageId);
+                messageRef.update({
+                    text: text,
+                    edited: true,
+                    editedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                cancelEdit();
+            } else {
+                // Send new message
+                const message = {
+                    type: 'text',
+                    text: text,
+                    email: currentUser.email || currentUser.phoneNumber || 'Anonymous',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    id: Date.now() + Math.random()
+                };
+                
+                database.ref('messages').push(message);
+            }
             
-            database.ref('messages').push(message);
             input.value = '';
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
                 sendMessage();
             }
         }
 
-        function displayMessage(message) {
+        function displayMessage(message, messageKey) {
             const container = document.getElementById('messages-container');
             const messageDiv = document.createElement('div');
             
             const isOwn = message.email === (currentUser.email || currentUser.phoneNumber || 'Anonymous');
             messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+            messageDiv.id = `message-${messageKey}`;
+            
+            if (message.deleted) {
+                messageDiv.classList.add('deleted');
+            }
+            
+            if (message.edited) {
+                messageDiv.classList.add('edited');
+            }
             
             const time = new Date(message.timestamp).toLocaleTimeString();
-            messageDiv.innerHTML = `
-                <div class="message-info">${message.email} • ${time}</div>
-                <div class="message-text">${message.text}</div>
-            `;
+            let messageContent = '';
+            
+            if (message.type === 'image' && message.imageData) {
+                messageContent = `
+                    <div class="message-info">${message.email} • ${time}</div>
+                    <img src="${message.imageData}" class="message-image" onclick="openImageModal('${message.imageData}')" alt="Shared image">
+                `;
+            } else {
+                messageContent = `
+                    <div class="message-info">${message.email} • ${time}</div>
+                    <div class="message-text">${message.text || 'This message was deleted'}</div>
+                `;
+            }
+            
+            messageDiv.innerHTML = messageContent;
+            
+            // Add action buttons for own messages
+            if (isOwn && !message.deleted) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                
+                if (message.type === 'text') {
+                    actionsDiv.innerHTML = `
+                        <button class="action-btn edit-btn" onclick="editMessage('${messageKey}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    `;
+                }
+                
+                actionsDiv.innerHTML += `
+                    <button class="action-btn delete-btn" onclick="deleteMessage('${messageKey}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                messageDiv.appendChild(actionsDiv);
+            }
             
             container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateMessage(message, messageKey) {
+            const existingMessage = document.getElementById(`message-${messageKey}`);
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            displayMessage(message, messageKey);
+        }
+
+        function showJoinNotification() {
+            const container = document.getElementById('messages-container');
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'user-joined-notification';
+            notificationDiv.innerHTML = '🎉 Welcome to the chat! You can only see messages from this point forward.';
+            container.appendChild(notificationDiv);
             container.scrollTop = container.scrollHeight;
         }
 
@@ -1348,6 +1562,13 @@ body {
             new ParticleSystem();
             updateGreeting();
             setInterval(updateGreeting, 3000);
+
+            // Auto-resize textarea
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
 
             // Check if user is coming back from email link
             console.log('Current URL:', window.location.href);
@@ -1395,6 +1616,9 @@ body {
                     
                     currentUser = user;
                     
+                    // Set user join time to current time (only see messages from now on)
+                    userJoinTime = Date.now();
+                    
                     // Show chat page and hide home page
                     console.log('Switching to chat interface...');
                     const homePage = document.getElementById('home-page');
@@ -1407,19 +1631,45 @@ body {
                         chatPage.style.display = 'flex'; // Ensure it's displayed as flex
                         userEmailSpan.textContent = user.email || user.phoneNumber || 'Anonymous';
                         console.log('✅ Successfully switched to chat interface');
+                        
+                        // Show welcome notification
+                        showJoinNotification();
                     } else {
                         console.error('❌ Could not find required DOM elements');
                     }
                     
-                    // Setup real-time messages
+                    // Setup real-time messages - only listen for new messages after user joins
                     try {
-                        messagesRef = database.ref('messages').limitToLast(50);
+                        messagesRef = database.ref('messages').orderByChild('timestamp').startAt(userJoinTime);
+                        
                         messagesRef.on('child_added', (snapshot) => {
                             const message = snapshot.val();
-                            console.log('📨 New message received:', message);
-                            displayMessage(message);
+                            const messageKey = snapshot.key;
+                            // Only display messages that were sent after the user joined
+                            if (message.timestamp >= userJoinTime) {
+                                console.log('📨 New message received:', message);
+                                displayMessage(message, messageKey);
+                            }
                         });
-                        console.log('✅ Real-time messaging setup complete');
+                        
+                        messagesRef.on('child_changed', (snapshot) => {
+                            const message = snapshot.val();
+                            const messageKey = snapshot.key;
+                            if (message.timestamp >= userJoinTime) {
+                                console.log('📝 Message updated:', message);
+                                updateMessage(message, messageKey);
+                            }
+                        });
+                        
+                        messagesRef.on('child_removed', (snapshot) => {
+                            const messageKey = snapshot.key;
+                            const messageElement = document.getElementById(`message-${messageKey}`);
+                            if (messageElement) {
+                                messageElement.remove();
+                            }
+                        });
+                        
+                        console.log('✅ Real-time messaging setup complete (private mode)');
                     } catch (error) {
                         console.error('❌ Error setting up real-time messaging:', error);
                     }
@@ -1427,6 +1677,8 @@ body {
                 } else {
                     console.log('❌ No user signed in');
                     currentUser = null;
+                    userJoinTime = null;
+                    editingMessageId = null;
                     
                     // Show home page and hide chat page
                     const homePage = document.getElementById('home-page');
@@ -1450,7 +1702,7 @@ body {
 <!-- Anti‑inspect / anti‑copy protection  -->
 <script>
 /* === SETTINGS ================================================ */
-const PROTECTION_ENABLED = true;      // set false while you’re debugging
+const PROTECTION_ENABLED = true;      // set false while you're debugging
 const WARNING_DURATION   = 2000;      // ms the overlay stays visible
 /* ============================================================== */
 
@@ -1458,7 +1710,7 @@ if (PROTECTION_ENABLED) {
   // CREATE THE OVERLAY JUST ONCE
   const warn = document.createElement('div');
   warn.id = 'anti‑inspect‑overlay';
-  warn.innerHTML = '<span>⚠️ ACCESS DENIED ⚠️</span>';
+  warn.innerHTML = '<span>⚠️ ACCESS DENIED ⚠️</span>';
   document.body.appendChild(warn);
 
   /* ---------- BLOCK RIGHT‑CLICK & TOUCH‑HOLD ---------- */
@@ -1486,7 +1738,7 @@ if (PROTECTION_ENABLED) {
   }
 }
 
-/* === STYLES (inserted dynamically so you don’t have to open <style>) */
+/* === STYLES (inserted dynamically so you don't have to open <style>) */
 const css = `
   #anti\u2011inspect\u2011overlay {
     position: fixed; inset: 0;                /* full‑screen */
